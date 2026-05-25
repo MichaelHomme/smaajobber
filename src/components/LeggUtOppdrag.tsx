@@ -4,7 +4,7 @@ import { Sparkles, ImageIcon, Mic, ArrowRight, ArrowLeft, Check, Compass, Info }
 
 interface LeggUtOppdragProps {
   onNavigate: (screen: Screen, transition?: 'push' | 'push_back' | 'slide_up') => void;
-  onAddOppdrag: (newOpp: Omit<Oppdrag, 'id' | 'opprettetDato' | 'status'>) => void;
+  onAddOppdrag: (newOpp: Omit<Oppdrag, 'id' | 'opprettetDato' | 'status'>) => Promise<boolean>;
 }
 
 export default function LeggUtOppdrag({ onNavigate, onAddOppdrag }: LeggUtOppdragProps) {
@@ -85,12 +85,12 @@ export default function LeggUtOppdrag({ onNavigate, onAddOppdrag }: LeggUtOppdra
     return true; // Step 4 price range always valid
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!isStepValid()) return;
 
-    // Trigger onAddOppdrag logic
-    onAddOppdrag({
+    // Trigger onAddOppdrag logic and await success
+    await onAddOppdrag({
       tittel,
       beskrivelse,
       kategori: kategori === '' ? 'annet' : kategori,
@@ -98,9 +98,6 @@ export default function LeggUtOppdrag({ onNavigate, onAddOppdrag }: LeggUtOppdra
       sted,
       dato
     });
-
-    // Go to dashboard mapping to specifications: `@id='submitBtn'` -> `dashbord` (push direction)
-    onNavigate('dashbord', 'push');
   };
 
   return (

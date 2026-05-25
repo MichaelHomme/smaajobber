@@ -1,13 +1,15 @@
 import React, { useState } from 'react';
-import { Screen } from '../types';
+import { Screen, Bruker } from '../types';
 import { Bell, MessageSquare, User, Menu, X } from 'lucide-react';
 
 interface HeaderProps {
   currentScreen: Screen;
   onNavigate: (screen: Screen, transition?: 'push' | 'push_back' | 'slide_up') => void;
+  currentUser: Bruker | null;
+  authLoading: boolean;
 }
 
-export default function Header({ currentScreen, onNavigate }: HeaderProps) {
+export default function Header({ currentScreen, onNavigate, currentUser, authLoading }: HeaderProps) {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   // Helper to handle navigation and close mobile menu
@@ -84,53 +86,36 @@ export default function Header({ currentScreen, onNavigate }: HeaderProps) {
 
         {/* Right Corner: User & Quick Info */}
         <div className="flex items-center gap-4">
-          {currentScreen === 'dashbord' ? (
+          {authLoading ? (
+            <div className="w-8 h-8 rounded-full bg-gray-200 animate-pulse"></div>
+          ) : currentUser ? (
             <div className="flex items-center gap-3">
               <button className="text-gray-500 hover:text-[#005cbd] p-2 hover:bg-gray-100 rounded-full transition-colors relative">
                 <Bell size={20} />
-                <span className="absolute top-1 right-1 w-2 h-2 bg-red-500 rounded-full"></span>
               </button>
               <div 
                 onClick={() => handleNav('dashbord', 'push')}
                 className="flex items-center gap-2 cursor-pointer hover:bg-gray-100 p-1.5 pr-3 rounded-full transition-colors font-sans"
               >
-                <img 
-                  className="w-8 h-8 rounded-full object-cover" 
-                  alt="Erik Jensen" 
-                  src="https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&q=80&w=100" 
-                />
-                <span className="hidden md:block text-sm font-semibold text-gray-700">Erik Jensen</span>
+                <div className="w-8 h-8 rounded-full bg-[#005cbd]/10 text-[#005cbd] flex items-center justify-center font-bold text-xs">
+                  {currentUser.navn.charAt(0)}
+                </div>
+                <span className="hidden md:block text-sm font-semibold text-gray-700">{currentUser.navn}</span>
               </div>
-            </div>
-          ) : currentScreen === 'finn_hjelper' ? (
-            // Needs the account_circle ancestor target from Finn en hjelper screen
-            <div className="flex items-center gap-2">
-              <button className="text-gray-500 hover:text-[#005cbd] p-2 hover:bg-gray-100 rounded-full transition-colors">
-                <Bell size={20} />
-              </button>
-              <button className="text-gray-500 hover:text-[#005cbd] p-2 hover:bg-gray-100 rounded-full transition-colors">
-                <MessageSquare size={20} />
-              </button>
               <button 
-                onClick={() => handleNav('dashbord', 'push')}
-                className="text-gray-500 hover:text-[#005cbd] p-2 hover:bg-gray-100 rounded-full transition-colors flex items-center justify-center account_circle"
+                onClick={() => { window.location.href = '/api/auth/logout'; }}
+                className="font-sans text-xs text-gray-400 hover:text-red-500 transition-colors cursor-pointer"
               >
-                <User size={22} className="account_circle" />
+                Logg ut
               </button>
             </div>
           ) : (
             <div className="flex items-center gap-3">
               <button 
-                onClick={() => handleNav('dashbord', 'push')} 
-                className="font-sans font-semibold text-sm text-[#005cbd] px-4 py-2 hover:bg-[#005cbd]/5 rounded-full transition-colors duration-200"
+                onClick={() => { window.location.href = '/api/auth/vipps'; }}
+                className="bg-[#ff5b24] text-white px-4 py-2 rounded-full font-sans font-semibold text-xs hover:bg-[#e04e1b] transition-all active:scale-95 flex items-center gap-1.5 shadow-sm cursor-pointer"
               >
-                Logg inn
-              </button>
-              <button 
-                onClick={() => handleNav('finn_hjelper', 'push')}
-                className="hidden md:block bg-[#005cbd] text-white px-5 py-2 rounded-full font-sans font-semibold text-sm hover:bg-[#004591] transition-colors duration-200 active:scale-95 transition-transform"
-              >
-                Kom i gang
+                <span className="font-bold">v</span> Logg inn med Vipps
               </button>
             </div>
           )}
@@ -170,18 +155,32 @@ export default function Header({ currentScreen, onNavigate }: HeaderProps) {
             Finn en hjelper
           </a>
           <div className="pt-2 border-t border-gray-100 flex flex-col gap-2">
-            <button 
-              onClick={() => handleNav('dashbord', 'push')}
-              className="w-full text-[#005cbd] font-sans font-semibold text-sm text-center py-2 border border-gray-200 rounded-full"
-            >
-              Logg inn
-            </button>
-            <button 
-              onClick={() => handleNav('finn_hjelper', 'push')}
-              className="w-full bg-[#005cbd] text-white font-sans font-semibold text-sm text-center py-2 rounded-full"
-            >
-              Kom i gang
-            </button>
+            {currentUser ? (
+              <>
+                <div className="text-xs text-gray-400 text-center font-sans mb-1">
+                  Logget inn som <span className="font-semibold text-gray-600">{currentUser.navn}</span>
+                </div>
+                <button 
+                  onClick={() => handleNav('dashbord', 'push')}
+                  className="w-full text-[#005cbd] font-sans font-semibold text-sm text-center py-2 border border-gray-200 rounded-full cursor-pointer"
+                >
+                  Min side (Dashbord)
+                </button>
+                <button 
+                  onClick={() => { window.location.href = '/api/auth/logout'; }}
+                  className="w-full bg-red-50 text-red-600 font-sans font-semibold text-sm text-center py-2 rounded-full cursor-pointer hover:bg-red-100 transition-colors"
+                >
+                  Logg ut
+                </button>
+              </>
+            ) : (
+              <button 
+                onClick={() => { window.location.href = '/api/auth/vipps'; }}
+                className="w-full bg-[#ff5b24] text-white font-sans font-semibold text-sm text-center py-2 rounded-full cursor-pointer"
+              >
+                Logg inn med Vipps
+              </button>
+            )}
           </div>
         </div>
       )}
