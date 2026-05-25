@@ -37,3 +37,11 @@ export interface ChatMessage {
   tekst: string;
   tid: string;
 }
+
+export interface Bruker {
+  id: string;
+  navn: string;
+  epost: string;
+  mobil: string;
+  verified: boolean;
+}
